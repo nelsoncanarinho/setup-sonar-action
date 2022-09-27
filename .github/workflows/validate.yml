@@ -12,4 +12,4 @@ jobs:
 
       - uses: ./
         with:
-          sonarToken: ${{ secrets.SONAR_TOKEN }}
+          sonarToken: 4476ec3b133087fb5893752b1d1b437d0369787c
