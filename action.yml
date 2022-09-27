@@ -1,5 +1,5 @@
-name: 'Your name here'
-description: 'Provide a description here'
+name: 'create-sonar-project'
+description: 'Create a project in SonarCloud using web api.'
 author: 'Your name or organization here'
 inputs:
   milliseconds: # change this
