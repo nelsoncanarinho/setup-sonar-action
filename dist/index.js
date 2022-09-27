@@ -15907,7 +15907,12 @@ function getInputs() {
     const sonarToken = core.getInput(ActionInputKeys.sonarToken, {
         required: true,
     });
+    console.log('Sonar token is present', Boolean(sonarToken));
+    console.log('Envs', JSON.stringify(process.env));
     core.setSecret(sonarToken);
+    if (!sonarToken) {
+        throw new Error('sonarToken was not provided.');
+    }
     return { sonarToken };
 }
 function buildProjectParams() {

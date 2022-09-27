@@ -9,7 +9,9 @@ jobs:
       - name: Git pull
         if: ${{ github.ref == 'refs/heads/main' }}
         run: git pull
-      - uses: ./
+      - name: Secret exists
+      - name: Validate Action
+        uses: ./
         with:
           sonarToken: ${{ secrets.SONAR_TOKEN }}
         env:

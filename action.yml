@@ -4,7 +4,6 @@ author: 'nelsoncanarinho'
 inputs:
   sonarToken:
     description: 'Sonar token used to integrate with SonarCloud api.'
-    required: true
 runs:
   using: 'node16'
   main: 'dist/index.js'
