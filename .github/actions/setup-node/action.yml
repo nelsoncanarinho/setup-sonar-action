@@ -1,0 +1,44 @@
+name: Setup NodeJs and pnpm
+description: Install NodeJs, pnpm and configure cache
+inputs:
+  node-version:
+    description: Node version to install
+    required: false
+    default: latest
+  pnpm-version:
+    description: pnpm version to install
+    required: false
+    default: latest
+  shell:
+    description: Which shell will run the scripts
+    required: false
+    default: bash
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v3
+
+    - name: Set Node.js to ${{ inputs.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Set pnpm to ${{ inputs.pnpm-version }}
+      uses: pnpm/action-setup@v2.2.2
+      with:
+        version: ${{ inputs.pnpm-version }}
+
+    - name: Get pnpm store directory
+      id: pnpm-cache
+      shell: ${{ inputs.shell }}
+      run: |
+        echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
+
+    - uses: actions/cache@v3
+      name: Setup pnpm cache
+      with:
+        path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-

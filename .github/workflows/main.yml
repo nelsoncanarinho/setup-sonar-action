@@ -1,0 +1,35 @@
+name: 'ci'
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+jobs:
+  prepare:
+    uses: ./.github/workflows/build.yml
+
+  analyze:
+    uses: ./.github/workflows/analyze.yml
+
+  test:
+    needs: [prepare, analyze]
+    uses: ./.github/workflows/validate.yml
+
+  release:
+    runs-on: ubuntu-latest
+    needs: test
+    if: ${{ github.ref == 'refs/heads/main' }}
+    steps:
+      - uses: actions/checkout@v3
+      - run: git pull
+
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v3
+        with:
+          semantic_version: 19
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

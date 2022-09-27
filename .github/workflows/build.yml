@@ -1,0 +1,32 @@
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/setup-node
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run linter
+        run: pnpm lint
+
+      - name: Format source
+        run: pnpm format
+
+      - name: Run unit tests
+        run: pnpm test
+
+      - name: Run build
+        run: pnpm build
+
+      - name: Commit and push changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          committer_name: GitHub Actions
+          message: 'chore: [skip-ci] format code and generate build artifacts'
+          add: '.'
