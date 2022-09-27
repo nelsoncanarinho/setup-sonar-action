@@ -15933,6 +15933,7 @@ async function run() {
     }
     catch (error) {
         const errorMessage = error instanceof Error ? error.message : `Unknown error ${error}`;
+        console.log(`Error details: ${error}`);
         core.setFailed(errorMessage);
     }
 }
