@@ -15901,7 +15901,7 @@ class ApiClient {
 
 var ActionInputKeys;
 (function (ActionInputKeys) {
-    ActionInputKeys["sonarToken"] = "sonarToken";
+    ActionInputKeys["sonarToken"] = "SONAR_TOKEN";
 })(ActionInputKeys || (ActionInputKeys = {}));
 function getInputs() {
     const sonarToken = core.getInput(ActionInputKeys.sonarToken);

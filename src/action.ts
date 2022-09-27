@@ -4,7 +4,7 @@ import ApiClient from './api/api-client';
 import { CreateProjectParams } from './api/types';
 
 enum ActionInputKeys {
-  sonarToken = 'sonarToken',
+  sonarToken = 'SONAR_TOKEN',
 }
 
 function getInputs() {
