@@ -25,25 +25,36 @@ function buildProjectParams(): CreateProjectParams {
 }
 
 async function run() {
-  const inputs = getInputs();
+  try {
+    const inputs = getInputs();
 
-  const api = new ApiClient(inputs.sonarToken);
-  const createProjectParams = buildProjectParams();
+    const api = new ApiClient(inputs.sonarToken);
+    const projectParams = buildProjectParams();
 
-  const getProjectResponse = await api.getProjectByProjectKey({
-    organization: createProjectParams.organization,
-    projects: [createProjectParams.project],
-  });
+    const getProjectResponse = await api.getProjectByProjectKey({
+      organization: projectParams.organization,
+      projects: [projectParams.project],
+    });
 
-  const projectExists = getProjectResponse.components.find(
-    item => item.key === createProjectParams.project
-  );
-
-  if (projectExists) {
-    console.log(
-      `Project ${projectExists.key} already exists. Creation will be skipped.`
+    const projectExists = getProjectResponse.components.find(
+      item => item.key === projectParams.project
     );
+
+    if (projectExists) {
+      console.log(
+        `Project ${projectExists.key} already exists. Creation will be skipped.`
+      );
+      return core.ExitCode.Success;
+    }
+
+    await api.createProject(projectParams);
+
+    console.log(`Project created successfully!`);
     return core.ExitCode.Success;
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : `Unknown error ${error}`;
+    core.setFailed(errorMessage);
   }
 }
 
