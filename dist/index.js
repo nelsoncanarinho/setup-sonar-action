@@ -15878,6 +15878,7 @@ class ApiClient {
         });
     }
     async createProject(params) {
+        console.log(`createProject -> firing a request with: ${JSON.stringify(params)}`);
         return this.httpClient
             .post(`${API_CONFIG.PATHS.PROJECTS}/create`, '', {
             params,
@@ -15885,6 +15886,7 @@ class ApiClient {
             .then(res => res.data);
     }
     async getProjectByProjectKey(params) {
+        console.log(`getProjectByProjectKey -> firing a request with: ${JSON.stringify(params)}`);
         return this.httpClient
             .get(`${API_CONFIG.PATHS.PROJECTS}/search`, {
             params,
@@ -15918,20 +15920,20 @@ async function run() {
         const inputs = getInputs();
         const api = new ApiClient(inputs.sonarToken);
         const projectParams = buildProjectParams();
-        core.debug(`Create project params: ${projectParams}`);
+        core.debug(`Create project params: ${JSON.stringify(projectParams)}`);
         const getProjectResponse = await api.getProjectByProjectKey({
             organization: projectParams.organization,
             projects: [projectParams.project],
         });
-        core.debug(`Create project params: ${projectParams}`);
+        core.debug(`Create project params: ${JSON.stringify(getProjectResponse)}`);
         const projectExists = getProjectResponse.components.find(item => item.key === projectParams.project);
-        core.debug(`Project exists: ${projectExists}`);
+        core.debug(`Project exists: ${JSON.stringify(projectExists)}`);
         if (projectExists) {
             console.log(`Project ${projectExists.key} already exists. Creation will be skipped.`);
             return core.ExitCode.Success;
         }
         const project = await api.createProject(projectParams);
-        core.debug(`Project created: ${project}`);
+        core.debug(`Project created: ${JSON.stringify(project)}`);
         console.log(`Project created successfully!`);
         return core.ExitCode.Success;
     }

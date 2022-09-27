@@ -24,6 +24,10 @@ export default class ApiClient {
   }
 
   async createProject(params: CreateProjectParams) {
+    console.log(
+      `createProject -> firing a request with: ${JSON.stringify(params)}`
+    );
+
     return this.httpClient
       .post<CreateProjectResponse>(`${API_CONFIG.PATHS.PROJECTS}/create`, '', {
         params,
@@ -32,6 +36,11 @@ export default class ApiClient {
   }
 
   async getProjectByProjectKey(params: GetProjectsByProjectKeyParams) {
+    console.log(
+      `getProjectByProjectKey -> firing a request with: ${JSON.stringify(
+        params
+      )}`
+    );
     return this.httpClient
       .get<GetProjectsByProjectKeyResponse>(
         `${API_CONFIG.PATHS.PROJECTS}/search`,

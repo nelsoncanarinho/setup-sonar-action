@@ -31,20 +31,20 @@ async function run() {
     const api = new ApiClient(inputs.sonarToken);
     const projectParams = buildProjectParams();
 
-    core.debug(`Create project params: ${projectParams}`);
+    core.debug(`Create project params: ${JSON.stringify(projectParams)}`);
 
     const getProjectResponse = await api.getProjectByProjectKey({
       organization: projectParams.organization,
       projects: [projectParams.project],
     });
 
-    core.debug(`Create project params: ${projectParams}`);
+    core.debug(`Create project params: ${JSON.stringify(getProjectResponse)}`);
 
     const projectExists = getProjectResponse.components.find(
       item => item.key === projectParams.project
     );
 
-    core.debug(`Project exists: ${projectExists}`);
+    core.debug(`Project exists: ${JSON.stringify(projectExists)}`);
 
     if (projectExists) {
       console.log(
@@ -55,7 +55,7 @@ async function run() {
 
     const project = await api.createProject(projectParams);
 
-    core.debug(`Project created: ${project}`);
+    core.debug(`Project created: ${JSON.stringify(project)}`);
 
     console.log(`Project created successfully!`);
     return core.ExitCode.Success;
