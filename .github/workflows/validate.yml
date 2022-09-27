@@ -13,5 +13,5 @@ jobs:
         uses: ./
         with:
           sonarToken: ${{ secrets.SONAR_TOKEN }}
-        env:
-          sonarToken: ${{ secrets.SONAR_TOKEN }}
+    env:
+      sonarToken: ${{ secrets.SONAR_TOKEN }}

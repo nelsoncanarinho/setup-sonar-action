@@ -15904,9 +15904,7 @@ var ActionInputKeys;
     ActionInputKeys["sonarToken"] = "sonarToken";
 })(ActionInputKeys || (ActionInputKeys = {}));
 function getInputs() {
-    const sonarToken = core.getInput(ActionInputKeys.sonarToken, {
-        required: true,
-    });
+    const sonarToken = core.getInput(ActionInputKeys.sonarToken);
     console.log('Sonar token is present', Boolean(sonarToken));
     console.log('Envs', JSON.stringify(process.env));
     core.setSecret(sonarToken);
