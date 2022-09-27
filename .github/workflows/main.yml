@@ -13,11 +13,10 @@ jobs:
     uses: ./.github/workflows/build.yml
 
   analyze:
-    if: ${{ github.ref == 'refs/heads/main' }}
     uses: ./.github/workflows/analyze.yml
 
   test:
-    needs: [prepare]
+    needs: [prepare, analyze]
     uses: ./.github/workflows/validate.yml
 
   release:

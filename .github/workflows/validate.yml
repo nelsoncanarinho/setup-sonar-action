@@ -9,7 +9,6 @@ jobs:
       - name: Git pull
         if: ${{ github.ref == 'refs/heads/main' }}
         run: git pull
-
       - uses: ./
         with:
-          sonarToken: 4476ec3b133087fb5893752b1d1b437d0369787c
+          sonarToken: ${{ secrets.SONAR_TOKEN }}
