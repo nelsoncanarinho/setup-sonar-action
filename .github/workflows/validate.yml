@@ -9,10 +9,8 @@ jobs:
       - name: Git pull
         if: ${{ github.ref == 'refs/heads/main' }}
         run: git pull
+
       - name: Validate Action
         uses: ./
         with:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
