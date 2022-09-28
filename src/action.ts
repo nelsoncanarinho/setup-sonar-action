@@ -1,68 +1,29 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import {
+  buildCreateProjectParams,
+  checkIfProjectExists,
+  getInputs,
+} from './action-utils';
 import ApiClient from './api/api-client';
-import { CreateProjectParams } from './api/types';
-
-enum ActionInputKeys {
-  sonarToken = 'SONAR_TOKEN',
-}
-
-function getInputs() {
-  const sonarToken = core.getInput(ActionInputKeys.sonarToken);
-
-  console.log('Sonar token is present', Boolean(sonarToken));
-  console.log('Envs', JSON.stringify(process.env));
-
-  core.setSecret(sonarToken);
-
-  if (!sonarToken) {
-    throw new Error('sonarToken was not provided.');
-  }
-
-  return { sonarToken };
-}
-
-function buildProjectParams(): CreateProjectParams {
-  const { repo } = github.context;
-  const projectName = `${repo.owner}-${repo.repo}`;
-
-  return { name: repo.repo, organization: repo.owner, project: projectName };
-}
 
 async function run() {
   try {
-    const inputs = getInputs();
+    const inputs = getInputs(core);
 
     const api = new ApiClient(inputs.sonarToken);
-    const projectParams = buildProjectParams();
+    const createProjectParams = buildCreateProjectParams(github);
 
-    core.debug(`Create project params: ${JSON.stringify(projectParams)}`);
-
-    const getProjectResponse = await api.getProjectByProjectKey({
-      organization: projectParams.organization,
-      projects: [projectParams.project],
+    const projectExists = await checkIfProjectExists(api, {
+      organization: createProjectParams.organization,
+      projects: [createProjectParams.project],
     });
 
-    core.debug(`Create project params: ${JSON.stringify(getProjectResponse)}`);
-
-    const projectExists = getProjectResponse.components.find(
-      item => item.key === projectParams.project
-    );
-
-    core.debug(`Project exists: ${JSON.stringify(projectExists)}`);
-
     if (projectExists) {
-      console.log(
-        `Project ${projectExists.key} already exists. Creation will be skipped.`
-      );
       return core.ExitCode.Success;
     }
 
-    const project = await api.createProject(projectParams);
-
-    core.debug(`Project created: ${JSON.stringify(project)}`);
-
-    console.log(`Project created successfully!`);
+    await api.createProject(createProjectParams);
     return core.ExitCode.Success;
   } catch (error) {
     const errorMessage =
@@ -72,6 +33,4 @@ async function run() {
   }
 }
 
-const action = { run };
-
-export { action };
+export const action = { run };

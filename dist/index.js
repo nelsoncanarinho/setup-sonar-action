@@ -15858,6 +15858,28 @@ __nccwpck_require__.r(__webpack_exports__);
 var core = __nccwpck_require__(5681);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+github@5.1.0/node_modules/@actions/github/lib/github.js
 var github = __nccwpck_require__(4128);
+;// CONCATENATED MODULE: ./src/action-utils.ts
+var ActionInputKeys;
+(function (ActionInputKeys) {
+    ActionInputKeys["sonarToken"] = "SONAR_TOKEN";
+})(ActionInputKeys || (ActionInputKeys = {}));
+function getInputs(core) {
+    const sonarToken = core.getInput(ActionInputKeys.sonarToken, {
+        required: true,
+    });
+    return { sonarToken };
+}
+function buildCreateProjectParams(github) {
+    const { repo } = github.context;
+    const projectName = `${repo.owner}-${repo.repo}`;
+    return { name: repo.repo, organization: repo.owner, project: projectName };
+}
+async function checkIfProjectExists(api, params) {
+    const getProjectResponse = await api.getProjectByProjectKey(params);
+    const projectExists = getProjectResponse.components.find(item => item.key === params.projects[0]);
+    return projectExists;
+}
+
 // EXTERNAL MODULE: ./node_modules/.pnpm/axios@0.27.2/node_modules/axios/index.js
 var axios = __nccwpck_require__(8734);
 var axios_default = /*#__PURE__*/__nccwpck_require__.n(axios);
@@ -15899,45 +15921,20 @@ class ApiClient {
 
 
 
-var ActionInputKeys;
-(function (ActionInputKeys) {
-    ActionInputKeys["sonarToken"] = "SONAR_TOKEN";
-})(ActionInputKeys || (ActionInputKeys = {}));
-function getInputs() {
-    const sonarToken = core.getInput(ActionInputKeys.sonarToken);
-    console.log('Sonar token is present', Boolean(sonarToken));
-    console.log('Envs', JSON.stringify(process.env));
-    core.setSecret(sonarToken);
-    if (!sonarToken) {
-        throw new Error('sonarToken was not provided.');
-    }
-    return { sonarToken };
-}
-function buildProjectParams() {
-    const { repo } = github.context;
-    const projectName = `${repo.owner}-${repo.repo}`;
-    return { name: repo.repo, organization: repo.owner, project: projectName };
-}
+
 async function run() {
     try {
-        const inputs = getInputs();
+        const inputs = getInputs(core);
         const api = new ApiClient(inputs.sonarToken);
-        const projectParams = buildProjectParams();
-        core.debug(`Create project params: ${JSON.stringify(projectParams)}`);
-        const getProjectResponse = await api.getProjectByProjectKey({
-            organization: projectParams.organization,
-            projects: [projectParams.project],
+        const createProjectParams = buildCreateProjectParams(github);
+        const projectExists = await checkIfProjectExists(api, {
+            organization: createProjectParams.organization,
+            projects: [createProjectParams.project],
         });
-        core.debug(`Create project params: ${JSON.stringify(getProjectResponse)}`);
-        const projectExists = getProjectResponse.components.find(item => item.key === projectParams.project);
-        core.debug(`Project exists: ${JSON.stringify(projectExists)}`);
         if (projectExists) {
-            console.log(`Project ${projectExists.key} already exists. Creation will be skipped.`);
             return core.ExitCode.Success;
         }
-        const project = await api.createProject(projectParams);
-        core.debug(`Project created: ${JSON.stringify(project)}`);
-        console.log(`Project created successfully!`);
+        await api.createProject(createProjectParams);
         return core.ExitCode.Success;
     }
     catch (error) {
@@ -15947,7 +15944,6 @@ async function run() {
     }
 }
 const action = { run };
-
 
 ;// CONCATENATED MODULE: ./src/main.ts
 
