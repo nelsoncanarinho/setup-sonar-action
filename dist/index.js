@@ -15858,28 +15858,6 @@ __nccwpck_require__.r(__webpack_exports__);
 var core = __nccwpck_require__(5681);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+github@5.1.0/node_modules/@actions/github/lib/github.js
 var github = __nccwpck_require__(4128);
-;// CONCATENATED MODULE: ./src/action-utils.ts
-var ActionInputKeys;
-(function (ActionInputKeys) {
-    ActionInputKeys["sonarToken"] = "SONAR_TOKEN";
-})(ActionInputKeys || (ActionInputKeys = {}));
-function getInputs(core) {
-    const sonarToken = core.getInput(ActionInputKeys.sonarToken, {
-        required: true,
-    });
-    return { sonarToken };
-}
-function buildCreateProjectParams(github) {
-    const { repo } = github.context;
-    const projectName = `${repo.owner}-${repo.repo}`;
-    return { name: repo.repo, organization: repo.owner, project: projectName };
-}
-async function checkIfProjectExists(api, params) {
-    const getProjectResponse = await api.getProjectByProjectKey(params);
-    const projectExists = getProjectResponse.components.find(item => item.key === params.projects[0]);
-    return projectExists;
-}
-
 // EXTERNAL MODULE: ./node_modules/.pnpm/axios@0.27.2/node_modules/axios/index.js
 var axios = __nccwpck_require__(8734);
 var axios_default = /*#__PURE__*/__nccwpck_require__.n(axios);
@@ -15917,7 +15895,34 @@ class ApiClient {
     }
 }
 
-;// CONCATENATED MODULE: ./src/action.ts
+;// CONCATENATED MODULE: ./src/action/service.ts
+var ActionInputKeys;
+(function (ActionInputKeys) {
+    ActionInputKeys["sonarToken"] = "SONAR_TOKEN";
+})(ActionInputKeys || (ActionInputKeys = {}));
+function getInputs(core) {
+    const sonarToken = core.getInput(ActionInputKeys.sonarToken, {
+        required: true,
+    });
+    return { sonarToken };
+}
+function buildCreateProjectParams(github) {
+    const { repo } = github.context;
+    const projectName = `${repo.owner}-${repo.repo}`;
+    return { name: repo.repo, organization: repo.owner, project: projectName };
+}
+async function checkIfProjectExists(api, params) {
+    const getProjectResponse = await api.getProjectByProjectKey(params);
+    const projectExists = getProjectResponse.components.find(item => item.key === params.projects[0]);
+    return projectExists;
+}
+function getErrorMessage(error) {
+    return error instanceof Error
+        ? error.message
+        : `Unknown error ${JSON.stringify(error)}`;
+}
+
+;// CONCATENATED MODULE: ./src/action/action.ts
 
 
 
@@ -15938,12 +15943,14 @@ async function run() {
         return core.ExitCode.Success;
     }
     catch (error) {
-        const errorMessage = error instanceof Error ? error.message : `Unknown error ${error}`;
-        console.log(`Error details: ${error}`);
-        core.setFailed(errorMessage);
+        console.error(`Error details: ${error}`);
+        core.setFailed(getErrorMessage(error));
     }
 }
-const action = { run };
+
+;// CONCATENATED MODULE: ./src/action/index.ts
+
+const action = { run: run };
 
 ;// CONCATENATED MODULE: ./src/main.ts
 

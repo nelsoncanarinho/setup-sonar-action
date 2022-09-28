@@ -1,9 +1,9 @@
-import { Core, Github } from './actions-lib';
-import ApiClient from './api/api-client';
+import { Core, Github } from '../lib';
+import ApiClient from '../api/api-client';
 import {
   CreateProjectParams,
   GetProjectsByProjectKeyParams,
-} from './api/types';
+} from '../api/types';
 
 export enum ActionInputKeys {
   sonarToken = 'SONAR_TOKEN',
@@ -35,4 +35,10 @@ export async function checkIfProjectExists(
   );
 
   return projectExists;
+}
+
+export function getErrorMessage(error: unknown) {
+  return error instanceof Error
+    ? error.message
+    : `Unknown error ${JSON.stringify(error)}`;
 }

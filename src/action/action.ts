@@ -1,13 +1,14 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import ApiClient from '../api/api-client';
 import {
   buildCreateProjectParams,
   checkIfProjectExists,
+  getErrorMessage,
   getInputs,
-} from './action-utils';
-import ApiClient from './api/api-client';
+} from './service';
 
-async function run() {
+export async function run() {
   try {
     const inputs = getInputs(core);
 
@@ -26,11 +27,7 @@ async function run() {
     await api.createProject(createProjectParams);
     return core.ExitCode.Success;
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : `Unknown error ${error}`;
-    console.log(`Error details: ${error}`);
-    core.setFailed(errorMessage);
+    console.error(`Error details: ${error}`);
+    core.setFailed(getErrorMessage(error));
   }
 }
-
-export const action = { run };
