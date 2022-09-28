@@ -19,7 +19,7 @@ export function getInputs(core: Core) {
 
 export function buildCreateProjectParams(github: Github): CreateProjectParams {
   const { repo } = github.context;
-  const projectName = `${repo.owner}-${repo.repo}`;
+  const projectName = repo.repo;
 
   return { name: repo.repo, organization: repo.owner, project: projectName };
 }

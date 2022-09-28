@@ -29,5 +29,6 @@ export async function run() {
   } catch (error) {
     console.error(`Error details: ${error}`);
     core.setFailed(getErrorMessage(error));
+    return core.ExitCode.Failure;
   }
 }
