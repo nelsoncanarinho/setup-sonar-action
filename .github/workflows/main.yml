@@ -14,6 +14,7 @@ jobs:
 
   analyze:
     uses: ./.github/workflows/analyze.yml
+    secrets: inherit
 
   test:
     needs: [prepare, analyze]
