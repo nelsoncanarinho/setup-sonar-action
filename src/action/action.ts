@@ -7,6 +7,7 @@ import {
   checkIfProjectExists,
   getErrorMessage,
   getInputs,
+  setOutput,
 } from './service';
 
 export async function run() {
@@ -27,11 +28,12 @@ export async function run() {
     );
 
     if (projectExists) {
-      core.debug('Project already exists. No action performed.');
+      setOutput(core, projectExists);
       return core.ExitCode.Success;
     }
 
-    await api.createProject(createProjectParams);
+    const { project } = await api.createProject(createProjectParams);
+    setOutput(core, project);
 
     return core.ExitCode.Success;
   } catch (error) {

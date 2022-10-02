@@ -13,6 +13,11 @@ inputs:
   SONAR_TOKEN:
     description: 'Sonar token used to integrate with SonarCloud api.'
     required: true
+outputs:
+  organization:
+    description: 'Sonar organization for the created project'
+  projectKey:
+    description: 'Sonar project key for the created project'
 runs:
   using: 'node16'
   main: 'dist/index.js'

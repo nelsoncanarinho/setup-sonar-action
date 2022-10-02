@@ -15,6 +15,7 @@ export interface Project {
   key: string;
   name: string;
   qualifier: string;
+  organization: string;
   visibility: 'public' | 'private';
 }
 

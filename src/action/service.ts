@@ -3,6 +3,7 @@ import ApiClient from '../api/api-client';
 import {
   CreateProjectParams,
   GetProjectsByProjectKeyParams,
+  Project,
 } from '../api/types';
 import { AxiosError } from 'axios';
 
@@ -11,6 +12,11 @@ export enum ActionInputKeys {
   project = 'project',
   organization = 'organization',
   projectName = 'projectName',
+}
+
+export enum ActionOutputKeys {
+  organization = 'organization',
+  projectKey = 'projectKey',
 }
 
 interface ActionInputs {
@@ -61,4 +67,10 @@ export function getErrorMessage(error: unknown) {
   return error instanceof Error || error instanceof AxiosError
     ? error.message
     : `Unknown error ${JSON.stringify(error)}`;
+}
+
+export function setOutput(core: Core, project: Project) {
+  core.setOutput(ActionOutputKeys.organization, project.organization);
+
+  core.setOutput(ActionOutputKeys.projectKey, project.organization);
 }
