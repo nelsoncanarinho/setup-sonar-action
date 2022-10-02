@@ -66,7 +66,10 @@ test('Continue if project already exists', async () => {
 
   jest.spyOn(core, 'getInput').mockReturnValueOnce(fakeToken);
 
-  mockAxiosGet.mockResolvedValueOnce({ data: mockGetProject });
+  mockAxiosGet.mockResolvedValueOnce({
+    config: { method: 'GET', url: '' },
+    data: mockGetProject,
+  });
 
   const exitCode = await action.run();
 
@@ -79,8 +82,14 @@ test('Create project', async () => {
 
   jest.spyOn(core, 'getInput').mockReturnValueOnce(fakeToken);
 
-  mockAxiosGet.mockResolvedValueOnce({ data: { components: [] } });
-  mockAxiosPost.mockResolvedValueOnce({ status: '201' });
+  mockAxiosGet.mockResolvedValueOnce({
+    config: { method: 'GET', url: '' },
+    data: { components: [] },
+  });
+  mockAxiosPost.mockResolvedValueOnce({
+    status: '200',
+    config: { method: 'POST', url: '', data: '' },
+  });
 
   const exitCode = await action.run();
 

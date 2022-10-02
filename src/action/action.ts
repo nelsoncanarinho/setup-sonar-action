@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import ApiClient from '../api/api-client';
+import Logger from '../lib/Logger';
 import {
   buildCreateProjectParams,
   checkIfProjectExists,
@@ -12,22 +13,28 @@ export async function run() {
   try {
     const inputs = getInputs(core);
 
-    const api = new ApiClient(inputs.sonarToken);
+    const api = new ApiClient(inputs.sonarToken, new Logger(core.debug));
     const createProjectParams = buildCreateProjectParams(github, inputs);
 
-    const projectExists = await checkIfProjectExists(api, {
+    const checkIfProjectExistsParams = {
       organization: createProjectParams.organization,
       projects: [createProjectParams.project],
-    });
+    };
+
+    const projectExists = await checkIfProjectExists(
+      api,
+      checkIfProjectExistsParams
+    );
 
     if (projectExists) {
+      core.debug('Project already exists. No action performed.');
       return core.ExitCode.Success;
     }
 
     await api.createProject(createProjectParams);
+
     return core.ExitCode.Success;
   } catch (error) {
-    console.error(`Error details: ${error}`);
     core.setFailed(getErrorMessage(error));
     return core.ExitCode.Failure;
   }

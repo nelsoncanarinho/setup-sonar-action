@@ -1,9 +1,10 @@
-import { Core, Github } from '../lib';
+import { Core, Github } from '../lib/lib';
 import ApiClient from '../api/api-client';
 import {
   CreateProjectParams,
   GetProjectsByProjectKeyParams,
 } from '../api/types';
+import { AxiosError } from 'axios';
 
 export enum ActionInputKeys {
   sonarToken = 'SONAR_TOKEN',
@@ -57,7 +58,7 @@ export async function checkIfProjectExists(
 }
 
 export function getErrorMessage(error: unknown) {
-  return error instanceof Error
+  return error instanceof Error || error instanceof AxiosError
     ? error.message
     : `Unknown error ${JSON.stringify(error)}`;
 }

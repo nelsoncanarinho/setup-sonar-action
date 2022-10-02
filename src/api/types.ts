@@ -1,3 +1,10 @@
+export const API_CONFIG = {
+  BASE_URL: 'https://sonarcloud.io/api',
+  PATHS: {
+    PROJECTS: '/projects',
+  },
+} as const;
+
 export interface CreateProjectParams {
   project: string;
   organization: string;
