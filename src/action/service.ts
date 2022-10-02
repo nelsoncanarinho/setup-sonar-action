@@ -7,21 +7,40 @@ import {
 
 export enum ActionInputKeys {
   sonarToken = 'SONAR_TOKEN',
+  project = 'project',
+  organization = 'organization',
+  projectName = 'projectName',
 }
 
-export function getInputs(core: Core) {
+interface ActionInputs {
+  sonarToken: string;
+  project: string;
+  organization: string;
+  projectName: string;
+}
+
+export function getInputs(core: Core): ActionInputs {
   const sonarToken = core.getInput(ActionInputKeys.sonarToken, {
     required: true,
   });
 
-  return { sonarToken };
+  const project = core.getInput(ActionInputKeys.project);
+  const organization = core.getInput(ActionInputKeys.organization);
+  const projectName = core.getInput(ActionInputKeys.projectName);
+
+  return { sonarToken, project, organization, projectName };
 }
 
-export function buildCreateProjectParams(github: Github): CreateProjectParams {
+export function buildCreateProjectParams(
+  github: Github,
+  inputs: ActionInputs
+): CreateProjectParams {
   const { repo } = github.context;
-  const projectName = repo.repo;
+  const project = inputs.project || repo.repo;
+  const name = inputs.projectName || repo.repo;
+  const organization = inputs.organization || repo.owner;
 
-  return { name: repo.repo, organization: repo.owner, project: projectName };
+  return { name, organization, project };
 }
 
 export async function checkIfProjectExists(

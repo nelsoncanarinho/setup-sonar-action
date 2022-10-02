@@ -13,7 +13,7 @@ export async function run() {
     const inputs = getInputs(core);
 
     const api = new ApiClient(inputs.sonarToken);
-    const createProjectParams = buildCreateProjectParams(github);
+    const createProjectParams = buildCreateProjectParams(github, inputs);
 
     const projectExists = await checkIfProjectExists(api, {
       organization: createProjectParams.organization,
