@@ -12,6 +12,7 @@ export enum ActionInputKeys {
   project = 'project',
   organization = 'organization',
   projectName = 'projectName',
+  mainBranch = 'mainBranch',
 }
 
 export enum ActionOutputKeys {
@@ -24,6 +25,7 @@ interface ActionInputs {
   project: string;
   organization: string;
   projectName: string;
+  mainBranch: string;
 }
 
 export function getInputs(core: Core): ActionInputs {
@@ -34,8 +36,9 @@ export function getInputs(core: Core): ActionInputs {
   const project = core.getInput(ActionInputKeys.project);
   const organization = core.getInput(ActionInputKeys.organization);
   const projectName = core.getInput(ActionInputKeys.projectName);
+  const mainBranch = core.getInput(ActionInputKeys.mainBranch);
 
-  return { sonarToken, project, organization, projectName };
+  return { sonarToken, project, organization, projectName, mainBranch };
 }
 
 export function buildCreateProjectParams(
@@ -73,4 +76,14 @@ export function setOutput(core: Core, project: Project) {
   core.setOutput(ActionOutputKeys.organization, project.organization);
 
   core.setOutput(ActionOutputKeys.projectKey, project.organization);
+}
+
+export async function renameBranch(
+  name: string,
+  project: string,
+  api: ApiClient
+) {
+  if (name === 'master') return;
+
+  return api.renameMasterBranch({ name, project });
 }

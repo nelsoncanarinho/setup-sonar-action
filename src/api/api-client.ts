@@ -6,6 +6,7 @@ import {
   CreateProjectResponse,
   GetProjectsByProjectKeyParams,
   GetProjectsByProjectKeyResponse,
+  PostBranchRenameParams,
 } from './types';
 
 export default class ApiClient {
@@ -59,6 +60,26 @@ export default class ApiClient {
       .then(res => {
         this.logger.logAxiosResponse(res);
         return res.data;
+      })
+      .catch((error: AxiosError) => {
+        this.logger.logAxiosError(error);
+        throw error;
+      });
+  }
+
+  async renameMasterBranch(params: PostBranchRenameParams) {
+    this.logger.logAxiosCall(
+      'POST',
+      `${API_CONFIG.BASE_URL}${API_CONFIG.PATHS.BRANCHES}/rename`,
+      params
+    );
+
+    return this.httpClient
+      .post(`${API_CONFIG.PATHS.BRANCHES}/rename`, '', {
+        params,
+      })
+      .then(res => {
+        this.logger.logAxiosResponse(res);
       })
       .catch((error: AxiosError) => {
         this.logger.logAxiosError(error);
