@@ -15861,55 +15861,106 @@ var github = __nccwpck_require__(4128);
 // EXTERNAL MODULE: ./node_modules/.pnpm/axios@0.27.2/node_modules/axios/index.js
 var axios = __nccwpck_require__(8734);
 var axios_default = /*#__PURE__*/__nccwpck_require__.n(axios);
-;// CONCATENATED MODULE: ./src/api/api-client.ts
-
+;// CONCATENATED MODULE: ./src/api/types.ts
 const API_CONFIG = {
     BASE_URL: 'https://sonarcloud.io/api',
     PATHS: {
         PROJECTS: '/projects',
     },
 };
+
+;// CONCATENATED MODULE: ./src/api/api-client.ts
+
+
 class ApiClient {
     httpClient;
-    constructor(apiToken) {
+    logger;
+    constructor(apiToken, logger) {
         this.httpClient = axios_default().create({
             baseURL: API_CONFIG.BASE_URL,
             auth: { username: apiToken, password: '' },
         });
+        this.logger = logger;
     }
     async createProject(params) {
-        console.log(`createProject -> firing a request with: ${JSON.stringify(params)}`);
+        this.logger.logAxiosCall('POST', `${API_CONFIG.BASE_URL}${API_CONFIG.PATHS.PROJECTS}/create`, params);
         return this.httpClient
             .post(`${API_CONFIG.PATHS.PROJECTS}/create`, '', {
             params,
         })
-            .then(res => res.data);
+            .then(res => {
+            this.logger.logAxiosResponse(res);
+            return res.data;
+        })
+            .catch((error) => {
+            this.logger.logAxiosError(error);
+            throw error;
+        });
     }
     async getProjectByProjectKey(params) {
-        console.log(`getProjectByProjectKey -> firing a request with: ${JSON.stringify(params)}`);
+        this.logger.logAxiosCall('GET', `${API_CONFIG.BASE_URL}${API_CONFIG.PATHS.PROJECTS}/search`, params);
         return this.httpClient
             .get(`${API_CONFIG.PATHS.PROJECTS}/search`, {
             params,
         })
-            .then(res => res.data);
+            .then(res => {
+            this.logger.logAxiosResponse(res);
+            return res.data;
+        })
+            .catch((error) => {
+            this.logger.logAxiosError(error);
+            throw error;
+        });
     }
 }
 
+;// CONCATENATED MODULE: ./src/lib/Logger.ts
+class Logger {
+    debug;
+    constructor(debug) {
+        this.debug = debug;
+    }
+    logAxiosResponse(res) {
+        this.debug(`${res.config.method} ${res.config.url} responded ${JSON.stringify(res.data)}`);
+    }
+    logAxiosError(error) {
+        this.debug(`Error -> ${error.config.method} ${error.config.url} responded ${error.message}`);
+    }
+    logAxiosCall(method, url, params) {
+        this.debug(`${method} ${url} with ${JSON.stringify(params)}`);
+    }
+}
+/* harmony default export */ const lib_Logger = (Logger);
+
 ;// CONCATENATED MODULE: ./src/action/service.ts
+
 var ActionInputKeys;
 (function (ActionInputKeys) {
     ActionInputKeys["sonarToken"] = "SONAR_TOKEN";
+    ActionInputKeys["project"] = "project";
+    ActionInputKeys["organization"] = "organization";
+    ActionInputKeys["projectName"] = "projectName";
 })(ActionInputKeys || (ActionInputKeys = {}));
+var ActionOutputKeys;
+(function (ActionOutputKeys) {
+    ActionOutputKeys["organization"] = "organization";
+    ActionOutputKeys["projectKey"] = "projectKey";
+})(ActionOutputKeys || (ActionOutputKeys = {}));
 function getInputs(core) {
     const sonarToken = core.getInput(ActionInputKeys.sonarToken, {
         required: true,
     });
-    return { sonarToken };
+    const project = core.getInput(ActionInputKeys.project);
+    const organization = core.getInput(ActionInputKeys.organization);
+    const projectName = core.getInput(ActionInputKeys.projectName);
+    return { sonarToken, project, organization, projectName };
 }
-function buildCreateProjectParams(github) {
+function buildCreateProjectParams(github, inputs) {
     const { repo } = github.context;
-    const projectName = `${repo.owner}-${repo.repo}`;
-    return { name: repo.repo, organization: repo.owner, project: projectName };
+    const project = inputs.project || repo.repo;
+    const name = inputs.projectName || repo.repo;
+    const organization = inputs.organization || repo.owner;
+    return { name, organization, project };
 }
 async function checkIfProjectExists(api, params) {
     const getProjectResponse = await api.getProjectByProjectKey(params);
@@ -15917,9 +15968,13 @@ async function checkIfProjectExists(api, params) {
     return projectExists;
 }
 function getErrorMessage(error) {
-    return error instanceof Error
+    return error instanceof Error || error instanceof axios.AxiosError
         ? error.message
         : `Unknown error ${JSON.stringify(error)}`;
+}
+function setOutput(core, project) {
+    core.setOutput(ActionOutputKeys.organization, project.organization);
+    core.setOutput(ActionOutputKeys.projectKey, project.organization);
 }
 
 ;// CONCATENATED MODULE: ./src/action/action.ts
@@ -15927,24 +15982,28 @@ function getErrorMessage(error) {
 
 
 
+
 async function run() {
     try {
         const inputs = getInputs(core);
-        const api = new ApiClient(inputs.sonarToken);
-        const createProjectParams = buildCreateProjectParams(github);
-        const projectExists = await checkIfProjectExists(api, {
+        const api = new ApiClient(inputs.sonarToken, new lib_Logger(core.debug));
+        const createProjectParams = buildCreateProjectParams(github, inputs);
+        const checkIfProjectExistsParams = {
             organization: createProjectParams.organization,
             projects: [createProjectParams.project],
-        });
+        };
+        const projectExists = await checkIfProjectExists(api, checkIfProjectExistsParams);
         if (projectExists) {
+            setOutput(core, projectExists);
             return core.ExitCode.Success;
         }
-        await api.createProject(createProjectParams);
+        const { project } = await api.createProject(createProjectParams);
+        setOutput(core, project);
         return core.ExitCode.Success;
     }
     catch (error) {
-        console.error(`Error details: ${error}`);
         core.setFailed(getErrorMessage(error));
+        return core.ExitCode.Failure;
     }
 }
 
