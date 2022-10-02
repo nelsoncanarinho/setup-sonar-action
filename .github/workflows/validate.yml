@@ -6,7 +6,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: git pull
-      - uses: ./
+      - name: Git pull
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: git pull
+
+      - name: Validate Action
+        uses: ./
         with:
-          milliseconds: 1000
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

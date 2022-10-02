@@ -26,6 +26,7 @@ jobs:
 
       - name: Commit and push changes
         uses: EndBug/add-and-commit@v9
+        if: ${{ github.ref == 'refs/heads/main' }}
         with:
           committer_name: GitHub Actions
           message: 'chore: [skip-ci] format code and generate build artifacts'

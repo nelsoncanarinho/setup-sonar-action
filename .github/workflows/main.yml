@@ -18,6 +18,7 @@ jobs:
   test:
     needs: [prepare, analyze]
     uses: ./.github/workflows/validate.yml
+    secrets: inherit
 
   release:
     runs-on: ubuntu-latest
