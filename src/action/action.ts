@@ -36,7 +36,10 @@ export async function run() {
     const { project } = await api.createProject(createProjectParams);
     await renameBranch(inputs.mainBranch, project.key, api);
 
-    setOutput(core, project);
+    setOutput(core, {
+      ...project,
+      organization: createProjectParams.organization,
+    });
 
     return core.ExitCode.Success;
   } catch (error) {

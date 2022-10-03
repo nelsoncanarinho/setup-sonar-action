@@ -15866,6 +15866,7 @@ const API_CONFIG = {
     BASE_URL: 'https://sonarcloud.io/api',
     PATHS: {
         PROJECTS: '/projects',
+        BRANCHES: '/project_branches',
     },
 };
 
@@ -15912,6 +15913,20 @@ class ApiClient {
             throw error;
         });
     }
+    async renameMasterBranch(params) {
+        this.logger.logAxiosCall('POST', `${API_CONFIG.BASE_URL}${API_CONFIG.PATHS.BRANCHES}/rename`, params);
+        return this.httpClient
+            .post(`${API_CONFIG.PATHS.BRANCHES}/rename`, '', {
+            params,
+        })
+            .then(res => {
+            this.logger.logAxiosResponse(res);
+        })
+            .catch((error) => {
+            this.logger.logAxiosError(error);
+            throw error;
+        });
+    }
 }
 
 ;// CONCATENATED MODULE: ./src/lib/Logger.ts
@@ -15940,6 +15955,7 @@ var ActionInputKeys;
     ActionInputKeys["project"] = "project";
     ActionInputKeys["organization"] = "organization";
     ActionInputKeys["projectName"] = "projectName";
+    ActionInputKeys["mainBranch"] = "mainBranch";
 })(ActionInputKeys || (ActionInputKeys = {}));
 var ActionOutputKeys;
 (function (ActionOutputKeys) {
@@ -15953,7 +15969,8 @@ function getInputs(core) {
     const project = core.getInput(ActionInputKeys.project);
     const organization = core.getInput(ActionInputKeys.organization);
     const projectName = core.getInput(ActionInputKeys.projectName);
-    return { sonarToken, project, organization, projectName };
+    const mainBranch = core.getInput(ActionInputKeys.mainBranch);
+    return { sonarToken, project, organization, projectName, mainBranch };
 }
 function buildCreateProjectParams(github, inputs) {
     const { repo } = github.context;
@@ -15975,6 +15992,11 @@ function getErrorMessage(error) {
 function setOutput(core, project) {
     core.setOutput(ActionOutputKeys.organization, project.organization);
     core.setOutput(ActionOutputKeys.projectKey, project.organization);
+}
+async function renameBranch(name, project, api) {
+    if (name === 'master')
+        return;
+    return api.renameMasterBranch({ name, project });
 }
 
 ;// CONCATENATED MODULE: ./src/action/action.ts
@@ -15998,7 +16020,11 @@ async function run() {
             return core.ExitCode.Success;
         }
         const { project } = await api.createProject(createProjectParams);
-        setOutput(core, project);
+        await renameBranch(inputs.mainBranch, project.key, api);
+        setOutput(core, {
+            ...project,
+            organization: createProjectParams.organization,
+        });
         return core.ExitCode.Success;
     }
     catch (error) {
