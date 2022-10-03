@@ -15990,8 +15990,10 @@ function getErrorMessage(error) {
         : `Unknown error ${JSON.stringify(error)}`;
 }
 function setOutput(core, project) {
+    core.debug(`${ActionOutputKeys.organization + ': ' + project.organization}`);
     core.setOutput(ActionOutputKeys.organization, project.organization);
     core.setOutput(ActionOutputKeys.projectKey, project.key);
+    core.debug(`${ActionOutputKeys.projectKey + ': ' + project.key}`);
 }
 async function renameBranch(name, project, api) {
     if (name === 'master')
