@@ -25,8 +25,8 @@ jobs:
         uses: sonarsource/sonarcloud-github-action@master
         with:
           args: >
-            -Dsonar.organization=${{steps.outputs.createProject.organization}}
-            -Dsonar.projectKey=${{steps.outputs.createProject.projectKey}}
+            -Dsonar.organization=${{steps.createProject.outputs.organization}}
+            -Dsonar.projectKey=${{steps.createProject.outputs.projectKey}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
