@@ -16,6 +16,11 @@ jobs:
         with:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+      - name: Log outputs
+        run: |
+          echo ${{steps.outputs.createProject.organization}}
+          echo ${{steps.outputs.createProject.projectKey}}
+
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
         with:
