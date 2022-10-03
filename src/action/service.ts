@@ -74,8 +74,7 @@ export function getErrorMessage(error: unknown) {
 
 export function setOutput(core: Core, project: Project) {
   core.setOutput(ActionOutputKeys.organization, project.organization);
-
-  core.setOutput(ActionOutputKeys.projectKey, project.organization);
+  core.setOutput(ActionOutputKeys.projectKey, project.key);
 }
 
 export async function renameBranch(

@@ -15991,7 +15991,7 @@ function getErrorMessage(error) {
 }
 function setOutput(core, project) {
     core.setOutput(ActionOutputKeys.organization, project.organization);
-    core.setOutput(ActionOutputKeys.projectKey, project.organization);
+    core.setOutput(ActionOutputKeys.projectKey, project.key);
 }
 async function renameBranch(name, project, api) {
     if (name === 'master')
