@@ -7,6 +7,7 @@ import {
   checkIfProjectExists,
   getErrorMessage,
   getInputs,
+  renameBranch,
   setOutput,
 } from './service';
 
@@ -33,7 +34,12 @@ export async function run() {
     }
 
     const { project } = await api.createProject(createProjectParams);
-    setOutput(core, project);
+    await renameBranch(inputs.mainBranch, project.key, api);
+
+    setOutput(core, {
+      ...project,
+      organization: createProjectParams.organization,
+    });
 
     return core.ExitCode.Success;
   } catch (error) {

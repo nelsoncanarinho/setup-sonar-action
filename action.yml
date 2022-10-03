@@ -10,6 +10,10 @@ inputs:
   organization:
     description: 'Name of the organization configured in Sonar. Default is the repo owner.'
     required: false
+  mainBranch:
+    description: 'Name of the main branch of the project'
+    required: false
+    default: main
   SONAR_TOKEN:
     description: 'Sonar token used to integrate with SonarCloud api.'
     required: true

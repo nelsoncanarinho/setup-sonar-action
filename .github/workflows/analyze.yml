@@ -9,12 +9,24 @@ jobs:
         with:
           # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
+
+      - name: Create Project
+        id: createProject
+        uses: ./
+        with:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Log outputs
+        run: |
+          echo ${{steps.createProject.outputs.organization}}
+          echo ${{steps.createProject.outputs.projectKey}}
+
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
         with:
           args: >
-            -Dsonar.organization=nelsoncanarinho
-            -Dsonar.projectKey=create-sonar-project
+            -Dsonar.organization=${{steps.createProject.outputs.organization}}
+            -Dsonar.projectKey=${{steps.createProject.outputs.projectKey}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

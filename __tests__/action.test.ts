@@ -94,19 +94,25 @@ test('Create project', async () => {
     data: { components: [] },
   });
 
-  mockAxiosPost.mockResolvedValueOnce({
-    status: '200',
-    config: {
-      method: 'POST',
-      url: '',
-    },
-    data: { project: mockGetProjectResponse.components[0] },
-  });
+  mockAxiosPost
+    .mockResolvedValueOnce({
+      status: '200',
+      config: {
+        method: 'POST',
+        url: '',
+      },
+      data: { project: mockGetProjectResponse.components[0] },
+    })
+    .mockResolvedValueOnce({
+      status: '201',
+      data: '',
+      config: { method: 'POST', url: '' },
+    });
 
   const exitCode = await action.run();
 
   expect(mockAxiosGet).toHaveBeenCalled();
-  expect(spyOnSetOutput).toHaveBeenCalledTimes(2);
   expect(mockAxiosPost).toHaveBeenCalled();
+  expect(spyOnSetOutput).toHaveBeenCalledTimes(2);
   expect(exitCode).toBe(core.ExitCode.Success);
 });

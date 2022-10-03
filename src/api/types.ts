@@ -2,6 +2,7 @@ export const API_CONFIG = {
   BASE_URL: 'https://sonarcloud.io/api',
   PATHS: {
     PROJECTS: '/projects',
+    BRANCHES: '/project_branches',
   },
 } as const;
 
@@ -36,3 +37,8 @@ export type GetProjectsByProjectKeyResponse = {
     }
   >;
 };
+
+export interface PostBranchRenameParams {
+  name: string;
+  project: string;
+}
