@@ -5,6 +5,8 @@ import { buildCreateProjectParams, getInputs } from './utils';
 
 export async function run() {
   try {
+    console.log('env vars', process.env);
+
     const inputs = getInputs();
 
     const api = new ApiClient(inputs.sonarToken);
