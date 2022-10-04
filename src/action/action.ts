@@ -1,7 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import ApiClient from '../api/api-client';
-import Logger from '../lib/Logger';
 import {
   buildCreateProjectParams,
   checkIfProjectExists,
@@ -15,7 +14,7 @@ export async function run() {
   try {
     const inputs = getInputs(core);
 
-    const api = new ApiClient(inputs.sonarToken, new Logger(core.debug));
+    const api = new ApiClient(inputs.sonarToken);
     const createProjectParams = buildCreateProjectParams(github, inputs);
 
     const checkIfProjectExistsParams = {
