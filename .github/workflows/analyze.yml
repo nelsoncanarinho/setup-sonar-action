@@ -26,8 +26,8 @@ jobs:
         uses: sonarsource/sonarcloud-github-action@master
         with:
           args: >
-            -Dsonar.organization=${{steps.createProject.outputs.organization}}
-            -Dsonar.projectKey=${{steps.createProject.outputs.projectKey}}
+            -Dsonar.organization=${{steps.createProject.outputs.SONAR_ORGANIZATION}}
+            -Dsonar.projectKey=${{steps.createProject.outputs.SONAR_PROJECT_KEY}}
             -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
             -Dsonar.qualitygate.wait=true
         env:
