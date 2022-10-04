@@ -1,48 +1,49 @@
 import * as core from '@actions/core';
-import * as github from '@actions/github';
 import ApiClient from '../api/api-client';
-import {
-  buildCreateProjectParams,
-  checkIfProjectExists,
-  getErrorMessage,
-  getInputs,
-  renameBranch,
-  setOutput,
-} from './service';
+import { ActionOutputKeys } from './types';
+import { buildCreateProjectParams, getInputs } from './utils';
 
 export async function run() {
   try {
-    const inputs = getInputs(core);
+    const inputs = getInputs();
 
     const api = new ApiClient(inputs.sonarToken);
-    const createProjectParams = buildCreateProjectParams(github, inputs);
+    const createProjectParams = buildCreateProjectParams(inputs);
 
-    const checkIfProjectExistsParams = {
+    const getProjectResponse = await api.getProjectByProjectKey({
       organization: createProjectParams.organization,
       projects: [createProjectParams.project],
-    };
+    });
 
-    const projectExists = await checkIfProjectExists(
-      api,
-      checkIfProjectExistsParams
+    const projectExists = getProjectResponse.components.find(
+      item => item.key === createProjectParams.project
     );
 
     if (projectExists) {
-      setOutput(core, projectExists);
+      core.setOutput(ActionOutputKeys.organization, projectExists.organization);
+      core.setOutput(ActionOutputKeys.projectKey, projectExists.key);
+
       return core.ExitCode.Success;
     }
 
     const { project } = await api.createProject(createProjectParams);
-    await renameBranch(inputs.mainBranch, project.key, api);
 
-    setOutput(core, {
-      ...project,
-      organization: createProjectParams.organization,
-    });
+    const shouldRenameMainBranch = inputs.mainBranch !== 'master';
+
+    if (shouldRenameMainBranch) {
+      await api.renameMasterBranch({
+        name: inputs.mainBranch,
+        project: project.key,
+      });
+    }
+
+    core.setOutput(ActionOutputKeys.organization, inputs.organization);
+    core.setOutput(ActionOutputKeys.projectKey, project.key);
 
     return core.ExitCode.Success;
   } catch (error) {
-    core.setFailed(getErrorMessage(error));
+    core.debug(JSON.stringify(error));
+    core.setFailed(`Failed to complete action.`);
     return core.ExitCode.Failure;
   }
 }

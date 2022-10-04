@@ -15856,8 +15856,6 @@ __nccwpck_require__.r(__webpack_exports__);
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+core@1.9.1/node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(5681);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@actions+github@5.1.0/node_modules/@actions/github/lib/github.js
-var github = __nccwpck_require__(4128);
 // EXTERNAL MODULE: ./node_modules/.pnpm/axios@0.27.2/node_modules/axios/index.js
 var axios = __nccwpck_require__(8734);
 var axios_default = /*#__PURE__*/__nccwpck_require__.n(axios);
@@ -15875,80 +15873,34 @@ const API_CONFIG = {
 
 class ApiClient {
     httpClient;
-    logger;
-    constructor(apiToken, logger) {
+    constructor(apiToken) {
         this.httpClient = axios_default().create({
             baseURL: API_CONFIG.BASE_URL,
             auth: { username: apiToken, password: '' },
         });
-        this.logger = logger;
     }
     async createProject(params) {
-        this.logger.logAxiosCall('POST', `${API_CONFIG.BASE_URL}${API_CONFIG.PATHS.PROJECTS}/create`, params);
         return this.httpClient
             .post(`${API_CONFIG.PATHS.PROJECTS}/create`, '', {
             params,
         })
-            .then(res => {
-            this.logger.logAxiosResponse(res);
-            return res.data;
-        })
-            .catch((error) => {
-            this.logger.logAxiosError(error);
-            throw error;
-        });
+            .then(res => res.data);
     }
     async getProjectByProjectKey(params) {
-        this.logger.logAxiosCall('GET', `${API_CONFIG.BASE_URL}${API_CONFIG.PATHS.PROJECTS}/search`, params);
         return this.httpClient
             .get(`${API_CONFIG.PATHS.PROJECTS}/search`, {
             params,
         })
-            .then(res => {
-            this.logger.logAxiosResponse(res);
-            return res.data;
-        })
-            .catch((error) => {
-            this.logger.logAxiosError(error);
-            throw error;
-        });
+            .then(res => res.data);
     }
     async renameMasterBranch(params) {
-        this.logger.logAxiosCall('POST', `${API_CONFIG.BASE_URL}${API_CONFIG.PATHS.BRANCHES}/rename`, params);
-        return this.httpClient
-            .post(`${API_CONFIG.PATHS.BRANCHES}/rename`, '', {
+        return this.httpClient.post(`${API_CONFIG.PATHS.BRANCHES}/rename`, '', {
             params,
-        })
-            .then(res => {
-            this.logger.logAxiosResponse(res);
-        })
-            .catch((error) => {
-            this.logger.logAxiosError(error);
-            throw error;
         });
     }
 }
 
-;// CONCATENATED MODULE: ./src/lib/Logger.ts
-class Logger {
-    debug;
-    constructor(debug) {
-        this.debug = debug;
-    }
-    logAxiosResponse(res) {
-        this.debug(`${res.config.method} ${res.config.url} responded ${JSON.stringify(res.data)}`);
-    }
-    logAxiosError(error) {
-        this.debug(`Error -> ${error.config.method} ${error.config.url} responded ${error.message}`);
-    }
-    logAxiosCall(method, url, params) {
-        this.debug(`${method} ${url} with ${JSON.stringify(params)}`);
-    }
-}
-/* harmony default export */ const lib_Logger = (Logger);
-
-;// CONCATENATED MODULE: ./src/action/service.ts
-
+;// CONCATENATED MODULE: ./src/action/types.ts
 var ActionInputKeys;
 (function (ActionInputKeys) {
     ActionInputKeys["sonarToken"] = "SONAR_TOKEN";
@@ -15962,7 +15914,14 @@ var ActionOutputKeys;
     ActionOutputKeys["organization"] = "organization";
     ActionOutputKeys["projectKey"] = "projectKey";
 })(ActionOutputKeys || (ActionOutputKeys = {}));
-function getInputs(core) {
+
+// EXTERNAL MODULE: ./node_modules/.pnpm/@actions+github@5.1.0/node_modules/@actions/github/lib/github.js
+var github = __nccwpck_require__(4128);
+;// CONCATENATED MODULE: ./src/action/utils.ts
+
+
+
+function getInputs() {
     const sonarToken = core.getInput(ActionInputKeys.sonarToken, {
         required: true,
     });
@@ -15972,33 +15931,12 @@ function getInputs(core) {
     const mainBranch = core.getInput(ActionInputKeys.mainBranch);
     return { sonarToken, project, organization, projectName, mainBranch };
 }
-function buildCreateProjectParams(github, inputs) {
+function buildCreateProjectParams(inputs) {
     const { repo } = github.context;
     const project = inputs.project || repo.repo;
     const name = inputs.projectName || repo.repo;
     const organization = inputs.organization || repo.owner;
     return { name, organization, project };
-}
-async function checkIfProjectExists(api, params) {
-    const getProjectResponse = await api.getProjectByProjectKey(params);
-    const projectExists = getProjectResponse.components.find(item => item.key === params.projects[0]);
-    return projectExists;
-}
-function getErrorMessage(error) {
-    return error instanceof Error || error instanceof axios.AxiosError
-        ? error.message
-        : `Unknown error ${JSON.stringify(error)}`;
-}
-function setOutput(core, project) {
-    core.debug(`${ActionOutputKeys.organization + ': ' + project.organization}`);
-    core.setOutput(ActionOutputKeys.organization, project.organization);
-    core.setOutput(ActionOutputKeys.projectKey, project.key);
-    core.debug(`${ActionOutputKeys.projectKey + ': ' + project.key}`);
-}
-async function renameBranch(name, project, api) {
-    if (name === 'master')
-        return;
-    return api.renameMasterBranch({ name, project });
 }
 
 ;// CONCATENATED MODULE: ./src/action/action.ts
@@ -16006,31 +15944,36 @@ async function renameBranch(name, project, api) {
 
 
 
-
 async function run() {
     try {
-        const inputs = getInputs(core);
-        const api = new ApiClient(inputs.sonarToken, new lib_Logger(core.debug));
-        const createProjectParams = buildCreateProjectParams(github, inputs);
-        const checkIfProjectExistsParams = {
+        const inputs = getInputs();
+        const api = new ApiClient(inputs.sonarToken);
+        const createProjectParams = buildCreateProjectParams(inputs);
+        const getProjectResponse = await api.getProjectByProjectKey({
             organization: createProjectParams.organization,
             projects: [createProjectParams.project],
-        };
-        const projectExists = await checkIfProjectExists(api, checkIfProjectExistsParams);
+        });
+        const projectExists = getProjectResponse.components.find(item => item.key === createProjectParams.project);
         if (projectExists) {
-            setOutput(core, projectExists);
+            core.setOutput(ActionOutputKeys.organization, projectExists.organization);
+            core.setOutput(ActionOutputKeys.projectKey, projectExists.key);
             return core.ExitCode.Success;
         }
         const { project } = await api.createProject(createProjectParams);
-        await renameBranch(inputs.mainBranch, project.key, api);
-        setOutput(core, {
-            ...project,
-            organization: createProjectParams.organization,
-        });
+        const shouldRenameMainBranch = inputs.mainBranch !== 'master';
+        if (shouldRenameMainBranch) {
+            await api.renameMasterBranch({
+                name: inputs.mainBranch,
+                project: project.key,
+            });
+        }
+        core.setOutput(ActionOutputKeys.organization, inputs.organization);
+        core.setOutput(ActionOutputKeys.projectKey, project.key);
         return core.ExitCode.Success;
     }
     catch (error) {
-        core.setFailed(getErrorMessage(error));
+        core.debug(JSON.stringify(error));
+        core.setFailed(`Failed to complete action.`);
         return core.ExitCode.Failure;
     }
 }
