@@ -15904,15 +15904,15 @@ class ApiClient {
 var ActionInputKeys;
 (function (ActionInputKeys) {
     ActionInputKeys["sonarToken"] = "SONAR_TOKEN";
-    ActionInputKeys["project"] = "project";
-    ActionInputKeys["organization"] = "organization";
-    ActionInputKeys["projectName"] = "projectName";
-    ActionInputKeys["mainBranch"] = "mainBranch";
+    ActionInputKeys["project"] = "SONAR_PROJECT_KEY";
+    ActionInputKeys["organization"] = "SONAR_ORGANIZATION";
+    ActionInputKeys["projectName"] = "SONAR_PROJECT_NAME";
+    ActionInputKeys["mainBranch"] = "SONAR_DEFAULT_BRANCH";
 })(ActionInputKeys || (ActionInputKeys = {}));
 var ActionOutputKeys;
 (function (ActionOutputKeys) {
-    ActionOutputKeys["organization"] = "organization";
-    ActionOutputKeys["projectKey"] = "projectKey";
+    ActionOutputKeys["organization"] = "SONAR_ORGANIZATION";
+    ActionOutputKeys["projectKey"] = "SONAR_PROJECT_KEY";
 })(ActionOutputKeys || (ActionOutputKeys = {}));
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/@actions+github@5.1.0/node_modules/@actions/github/lib/github.js
@@ -15922,19 +15922,14 @@ var github = __nccwpck_require__(4128);
 
 
 function getInputs() {
-    try {
-        const sonarToken = core.getInput(ActionInputKeys.sonarToken, {
-            required: true,
-        });
-        const project = core.getInput(ActionInputKeys.project);
-        const organization = core.getInput(ActionInputKeys.organization);
-        const projectName = core.getInput(ActionInputKeys.projectName);
-        const mainBranch = core.getInput(ActionInputKeys.mainBranch);
-        return { sonarToken, project, organization, projectName, mainBranch };
-    }
-    catch (error) {
-        throw new Error(`GET_INPUTS_ERROR: fails to get action inputs. ${ActionInputKeys.sonarToken} is required.`, { cause: error });
-    }
+    const sonarToken = core.getInput(ActionInputKeys.sonarToken, {
+        required: true,
+    });
+    const project = core.getInput(ActionInputKeys.project);
+    const organization = core.getInput(ActionInputKeys.organization);
+    const projectName = core.getInput(ActionInputKeys.projectName);
+    const mainBranch = core.getInput(ActionInputKeys.mainBranch);
+    return { sonarToken, project, organization, projectName, mainBranch };
 }
 function buildCreateProjectParams(inputs) {
     const { repo } = github.context;
@@ -15951,7 +15946,6 @@ function buildCreateProjectParams(inputs) {
 
 async function run() {
     try {
-        console.log('env vars', process.env);
         const inputs = getInputs();
         const api = new ApiClient(inputs.sonarToken);
         const createProjectParams = buildCreateProjectParams(inputs);

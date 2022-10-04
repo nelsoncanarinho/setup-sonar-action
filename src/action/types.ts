@@ -8,13 +8,13 @@ export interface ActionInputs {
 
 export enum ActionInputKeys {
   sonarToken = 'SONAR_TOKEN',
-  project = 'project',
-  organization = 'organization',
-  projectName = 'projectName',
-  mainBranch = 'mainBranch',
+  project = 'SONAR_PROJECT_KEY',
+  organization = 'SONAR_ORGANIZATION',
+  projectName = 'SONAR_PROJECT_NAME',
+  mainBranch = 'SONAR_DEFAULT_BRANCH',
 }
 
 export enum ActionOutputKeys {
-  organization = 'organization',
-  projectKey = 'projectKey',
+  organization = 'SONAR_ORGANIZATION',
+  projectKey = 'SONAR_PROJECT_KEY',
 }
