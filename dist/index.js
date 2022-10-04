@@ -15884,18 +15884,55 @@ class ApiClient {
             .post(`${API_CONFIG.PATHS.PROJECTS}/create`, '', {
             params,
         })
-            .then(res => res.data);
+            .then(res => res.data)
+            .catch((error) => {
+            if (error.status === '400') {
+                throw new Error(`CREATE_PROJECT_ERROR: project ${params.project} may already exists or parameters are missing. Params: ${JSON.stringify(params)}`, { cause: error });
+            }
+            if (error.status === '403') {
+                throw new Error(`CREATE_PROJECT_ERROR: insufficient privileges to ${params.organization} or missing credentials.`, { cause: error });
+            }
+            if (error.status === '404') {
+                throw new Error(`CREATE_PROJECT_ERROR: organization ${params.organization} not found`, { cause: error });
+            }
+            throw new Error(`CREATE_PROJECT_ERROR: fails to create project. Try again later.`, { cause: error });
+        });
     }
     async getProjectByProjectKey(params) {
         return this.httpClient
             .get(`${API_CONFIG.PATHS.PROJECTS}/search`, {
             params,
         })
-            .then(res => res.data);
+            .then(res => res.data)
+            .catch((error) => {
+            if (error.status === '400') {
+                throw new Error(`GET_PROJECT_ERROR: parameters are missing. Check them and try again. Params: ${JSON.stringify(params)}`, { cause: error });
+            }
+            if (error.status === '403') {
+                throw new Error(`GET_PROJECT_ERROR: insufficient privileges to organization ${params.organization} or missing credentials.`, { cause: error });
+            }
+            if (error.status === '404') {
+                throw new Error(`GET_PROJECT_ERROR: organization ${params.organization} not found`, { cause: error });
+            }
+            throw new Error(`GET_PROJECT_ERROR: fails to get projects for organization ${params.organization}. Try again later.`, { cause: error });
+        });
     }
     async renameMasterBranch(params) {
-        return this.httpClient.post(`${API_CONFIG.PATHS.BRANCHES}/rename`, '', {
+        return this.httpClient
+            .post(`${API_CONFIG.PATHS.BRANCHES}/rename`, '', {
             params,
+        })
+            .catch((error) => {
+            if (error.status === '400') {
+                throw new Error(`RENAME_MASTER_BRANCH_ERROR: parameters are missing. Check them and try again. Params: ${JSON.stringify(params)}`, { cause: error });
+            }
+            if (error.status === '403') {
+                throw new Error(`RENAME_MASTER_BRANCH_ERROR: insufficient privileges to ${params.project} or missing credentials.`, { cause: error });
+            }
+            if (error.status === '404') {
+                throw new Error(`RENAME_MASTER_BRANCH_ERROR: project ${params.project} not found`, { cause: error });
+            }
+            throw new Error(`RENAME_MASTER_BRANCH_ERROR: fails to rename master branch to ${params.name}. Try again later.`, { cause: error });
         });
     }
 }
@@ -15922,14 +15959,19 @@ var github = __nccwpck_require__(4128);
 
 
 function getInputs() {
-    const sonarToken = core.getInput(ActionInputKeys.sonarToken, {
-        required: true,
-    });
-    const project = core.getInput(ActionInputKeys.project);
-    const organization = core.getInput(ActionInputKeys.organization);
-    const projectName = core.getInput(ActionInputKeys.projectName);
-    const mainBranch = core.getInput(ActionInputKeys.mainBranch);
-    return { sonarToken, project, organization, projectName, mainBranch };
+    try {
+        const sonarToken = core.getInput(ActionInputKeys.sonarToken, {
+            required: true,
+        });
+        const project = core.getInput(ActionInputKeys.project);
+        const organization = core.getInput(ActionInputKeys.organization);
+        const projectName = core.getInput(ActionInputKeys.projectName);
+        const mainBranch = core.getInput(ActionInputKeys.mainBranch);
+        return { sonarToken, project, organization, projectName, mainBranch };
+    }
+    catch (error) {
+        throw new Error(`GET_INPUTS_ERROR: fails to get action inputs. ${ActionInputKeys.sonarToken} is required.`, { cause: error });
+    }
 }
 function buildCreateProjectParams(inputs) {
     const { repo } = github.context;
@@ -15972,8 +16014,13 @@ async function run() {
         return core.ExitCode.Success;
     }
     catch (error) {
+        if (error instanceof Error) {
+            core.setFailed(error.message);
+        }
+        else {
+            core.setFailed(`Failed to complete action.`);
+        }
         core.debug(JSON.stringify(error));
-        core.setFailed(`Failed to complete action.`);
         return core.ExitCode.Failure;
     }
 }
