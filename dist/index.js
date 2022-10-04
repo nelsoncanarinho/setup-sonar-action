@@ -15884,55 +15884,18 @@ class ApiClient {
             .post(`${API_CONFIG.PATHS.PROJECTS}/create`, '', {
             params,
         })
-            .then(res => res.data)
-            .catch((error) => {
-            if (error.status === '400') {
-                throw new Error(`CREATE_PROJECT_ERROR: project ${params.project} may already exists or parameters are missing. Params: ${JSON.stringify(params)}`, { cause: error });
-            }
-            if (error.status === '403') {
-                throw new Error(`CREATE_PROJECT_ERROR: insufficient privileges to ${params.organization} or missing credentials.`, { cause: error });
-            }
-            if (error.status === '404') {
-                throw new Error(`CREATE_PROJECT_ERROR: organization ${params.organization} not found`, { cause: error });
-            }
-            throw new Error(`CREATE_PROJECT_ERROR: fails to create project. Try again later.`, { cause: error });
-        });
+            .then(res => res.data);
     }
     async getProjectByProjectKey(params) {
         return this.httpClient
             .get(`${API_CONFIG.PATHS.PROJECTS}/search`, {
             params,
         })
-            .then(res => res.data)
-            .catch((error) => {
-            if (error.status === '400') {
-                throw new Error(`GET_PROJECT_ERROR: parameters are missing. Check them and try again. Params: ${JSON.stringify(params)}`, { cause: error });
-            }
-            if (error.status === '403') {
-                throw new Error(`GET_PROJECT_ERROR: insufficient privileges to organization ${params.organization} or missing credentials.`, { cause: error });
-            }
-            if (error.status === '404') {
-                throw new Error(`GET_PROJECT_ERROR: organization ${params.organization} not found`, { cause: error });
-            }
-            throw new Error(`GET_PROJECT_ERROR: fails to get projects for organization ${params.organization}. Try again later.`, { cause: error });
-        });
+            .then(res => res.data);
     }
     async renameMasterBranch(params) {
-        return this.httpClient
-            .post(`${API_CONFIG.PATHS.BRANCHES}/rename`, '', {
+        return this.httpClient.post(`${API_CONFIG.PATHS.BRANCHES}/rename`, '', {
             params,
-        })
-            .catch((error) => {
-            if (error.status === '400') {
-                throw new Error(`RENAME_MASTER_BRANCH_ERROR: parameters are missing. Check them and try again. Params: ${JSON.stringify(params)}`, { cause: error });
-            }
-            if (error.status === '403') {
-                throw new Error(`RENAME_MASTER_BRANCH_ERROR: insufficient privileges to ${params.project} or missing credentials.`, { cause: error });
-            }
-            if (error.status === '404') {
-                throw new Error(`RENAME_MASTER_BRANCH_ERROR: project ${params.project} not found`, { cause: error });
-            }
-            throw new Error(`RENAME_MASTER_BRANCH_ERROR: fails to rename master branch to ${params.name}. Try again later.`, { cause: error });
         });
     }
 }
@@ -15988,6 +15951,7 @@ function buildCreateProjectParams(inputs) {
 
 async function run() {
     try {
+        console.log('env vars', process.env);
         const inputs = getInputs();
         const api = new ApiClient(inputs.sonarToken);
         const createProjectParams = buildCreateProjectParams(inputs);
@@ -15999,6 +15963,7 @@ async function run() {
         if (projectExists) {
             core.setOutput(ActionOutputKeys.organization, projectExists.organization);
             core.setOutput(ActionOutputKeys.projectKey, projectExists.key);
+            core.notice(`Project ${projectExists.key} already exists. No action performed.`);
             return core.ExitCode.Success;
         }
         const { project } = await api.createProject(createProjectParams);
@@ -16014,13 +15979,13 @@ async function run() {
         return core.ExitCode.Success;
     }
     catch (error) {
+        core.debug(JSON.stringify(error));
         if (error instanceof Error) {
-            core.setFailed(error.message);
+            core.error(error.message);
         }
         else {
-            core.setFailed(`Failed to complete action.`);
+            core.error(`Failed to complete action.`);
         }
-        core.debug(JSON.stringify(error));
         return core.ExitCode.Failure;
     }
 }
