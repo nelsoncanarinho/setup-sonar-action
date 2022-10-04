@@ -23,6 +23,9 @@ export async function run() {
       core.setOutput(ActionOutputKeys.organization, projectExists.organization);
       core.setOutput(ActionOutputKeys.projectKey, projectExists.key);
 
+      core.notice(
+        `Project ${projectExists.key} already exists. No action performed.`
+      );
       return core.ExitCode.Success;
     }
 
@@ -42,13 +45,14 @@ export async function run() {
 
     return core.ExitCode.Success;
   } catch (error) {
+    core.debug(JSON.stringify(error));
+
     if (error instanceof Error) {
-      core.setFailed(error.message);
+      core.error(error.message);
     } else {
-      core.setFailed(`Failed to complete action.`);
+      core.error(`Failed to complete action.`);
     }
 
-    core.debug(JSON.stringify(error));
     return core.ExitCode.Failure;
   }
 }
