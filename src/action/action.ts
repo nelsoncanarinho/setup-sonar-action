@@ -42,8 +42,13 @@ export async function run() {
 
     return core.ExitCode.Success;
   } catch (error) {
+    if (error instanceof Error) {
+      core.setFailed(error.message);
+    } else {
+      core.setFailed(`Failed to complete action.`);
+    }
+
     core.debug(JSON.stringify(error));
-    core.setFailed(`Failed to complete action.`);
     return core.ExitCode.Failure;
   }
 }

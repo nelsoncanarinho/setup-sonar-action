@@ -10,7 +10,8 @@
     "lint": "eslint --fix src/**/*.ts",
     "lint:check": "eslint src/**/*.ts",
     "build": "ncc build src/main.ts --license licenses.txt",
-    "test": "jest"
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
