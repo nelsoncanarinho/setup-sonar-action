@@ -10,16 +10,17 @@ jobs:
           # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
 
+      - uses: ./.github/actions/setup-node
+
       - name: Create Project
         id: createProject
         uses: ./
         with:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Log outputs
+      - name: Run tests
         run: |
-          echo ${{steps.createProject.outputs.organization}}
-          echo ${{steps.createProject.outputs.projectKey}}
+          pnpm install && pnpm test:coverage
 
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
@@ -27,6 +28,7 @@ jobs:
           args: >
             -Dsonar.organization=${{steps.createProject.outputs.organization}}
             -Dsonar.projectKey=${{steps.createProject.outputs.projectKey}}
+            -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
