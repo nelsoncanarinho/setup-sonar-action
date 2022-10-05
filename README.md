@@ -22,7 +22,7 @@ First, create a secret with your SonarCloud Api Token following [this guide](htt
 
 ```yml
 - name: Setup SonarCloud
-  uses: nelsoncanarinho/setup-sonar@v1
+  uses: nelsoncanarinho/setup-sonar@v1.0.0
   with:
     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 ```
@@ -48,7 +48,7 @@ jobs:
 
       - name: Setup Sonar
         id: setupSonar
-        uses: ./
+        uses: nelsoncanarinho/setup-sonar@v1.0.0
         with:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
