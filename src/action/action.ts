@@ -40,7 +40,10 @@ export async function run() {
       });
     }
 
-    core.setOutput(ActionOutputKeys.organization, inputs.organization);
+    core.setOutput(
+      ActionOutputKeys.organization,
+      createProjectParams.organization
+    );
     core.setOutput(ActionOutputKeys.projectKey, project.key);
 
     return core.ExitCode.Success;
