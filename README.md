@@ -1,88 +1,65 @@
-# renewed typescript action
+# set-up-sonar
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![ci](https://github.com/nelsoncanarinho/renewed-typescript-action/actions/workflows/main.yml/badge.svg)](https://github.com/nelsoncanarinho/renewed-typescript-action/actions/workflows/main.yml)
 [![semantic-release: angular](https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=create-sonar-project&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=create-sonar-project)
 
-## Create awesome Github Actions with Typescript 😎
+## Setup a new project in SonarCloud from CI
 
-This is a ready to use Typescript template for create Github Actions.
+Thanks to the SonarCloud team, it's already easy to integrate it into your GitHub workflow using the official action, but some manual work is still required before you have your first analysis done.
 
-This template includes compilation support, tests, a validation workflow, publishing, and versioning.
+This action offers an intuitive way to prepare your project to be analyzed for the first time directly from your CI pipeline. It may help you to build templates or reusable workflows integrated with SonarCloud without leaving GitHub.
 
-It's based on [actions/typescript-action](https://github.com/actions/typescript-action) with some tweaks.
+## Requirements
 
-### Tweaks
+Have an account in SonarCloud;
+A SonarCloud Api token;
 
-- Uses `pnpm` as package manager;
-- Uses `eslint` and `prettier` with minimal configuration;
-- Up to date dependencies;
-- Simpler build configuration;
-- Easy to customize composable workflow;
-- Automatic release workflow;
+## Usage
 
-## Create an action from this template
+First, create a secret with your SonarCloud Api Token following [this guide](Encrypted secrets - GitHub Docs), and then add this action to your workflow like below:
 
-Click the `Use this Template` and provide the new repo details for your action.
-
-Make sure you have `nodejs` and `pnpm` installed on your machine.
-
-## Code in Main
-
-Install the dependencies
-
-```bash
-pnpm install
+```yml
+- name: Setup SonarCloud
+  uses: nelsoncanarinho/setup-sonar@v1
+  with:
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 ```
 
-Build the typescript and package it for distribution
+This will create a new project in your SonarCloud organization using your repo name as the project key. It'll also rename Sonar's default branch to match the GitHub default (main).
 
-```bash
-pnpm build
+The action will always output a `SONAR_ORGANIZATION` and `SONAR_PROJECT_KEY`, but it creates the project only once, as expected.
+
+A standard workflow would look like this:
+
+```yml
+on:
+  push:
+    branches:
+      - main
+jobs:
+  sonarcloud:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Sonar
+        id: setupSonar
+        uses: ./
+        with:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@master
+        with:
+          args: >
+            -Dsonar.organization=${{steps.setupSonar.outputs.SONAR_ORGANIZATION}}
+            -Dsonar.projectKey=${{steps.setupSonar.outputs.SONAR_PROJECT_KEY}}
+            -Dsonar.qualitygate.wait=true ## Failed analysis will fail the action
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 ```
-
-Run the tests ✅:
-
-```bash
-$ pnpm test
-
- PASS  ./wait.test.js
-  ✓ throws invalid number (3ms)
-  ✓ wait 500 ms (504ms)
-  ✓ test runs (95ms)
-```
-
-## Change action.yml
-
-The action.yml defines the inputs and output for your action.
-
-Update the action.yml with your name, description, inputs and outputs for your action.
-
-See the [documentation](https://help.github.com/en/articles/metadata-syntax-for-github-actions)
-
-## Change the Code
-
-Most toolkit and CI/CD operations involve async operations so the action is run in an async function.
-
-```javascript
-import * as core from '@actions/core';
-...
-
-async function run() {
-  try {
-      ...
-  }
-  catch (error) {
-    core.setFailed(error.message);
-  }
-}
-```
-
-See the [toolkit documentation](https://github.com/actions/toolkit/blob/master/README.md#packages) for the various packages.
-
-## Publish to a distribution branch
-
-Push code to `main` triggers a continuous integration pipeline that will take care of validate the source code, generate build artifacts and a new release based on the commits.
-
-> It's recommended to follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) guidelines to have a meaningfully commit history and to take advantage of [semantic-release](https://github.com/semantic-release/semantic-release/blob/master/README.md#how-does-it-work) automatic versioning.
