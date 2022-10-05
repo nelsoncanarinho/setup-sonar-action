@@ -1,5 +1,5 @@
 {
-  "name": "create-sonar-project",
+  "name": "setup-sonar-action",
   "version": "0.0.0",
   "private": true,
   "description": "Create a project in SonarCloud using web api.",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nelsoncanarinho/create-sonar-project"
+    "url": "git+https://github.com/nelsoncanarinho/setup-sonar-action"
   },
   "keywords": [
     "actions",
