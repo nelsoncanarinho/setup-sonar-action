@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![ci](https://github.com/nelsoncanarinho/renewed-typescript-action/actions/workflows/main.yml/badge.svg)](https://github.com/nelsoncanarinho/renewed-typescript-action/actions/workflows/main.yml)
 [![semantic-release: angular](https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=create-sonar-project&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=create-sonar-project)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=setup-sonar-action&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=setup-sonar-action)
 
 ## Setup a new project in SonarCloud from CI
 
